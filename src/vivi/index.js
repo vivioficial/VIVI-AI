@@ -14,8 +14,7 @@ import ViviIntegrations from './modules/ViviIntegrations';
 import ViviNotifications from './modules/ViviNotifications';
 import ViviSettings from './modules/ViviSettings';
 import ViviFounderConsole from './modules/ViviFounderConsole';
-import ViviAnalytics from './modules/ViviAnalytics';
-import ViviSecurity from './modules/ViviSecurity';
+// import ViviAnalytics from './modules/ViviAnalytics';import ViviSecurity from './modules/ViviSecurity';
 import ViviApi from './modules/ViviApi';
 import ViviLogger from './modules/ViviLogger';
 import ViviRealtimeFacts from './modules/ViviRealtimeFacts';
@@ -53,8 +52,7 @@ export function getVivi() {
   registry.register(new ViviKnowledge(bus));
   registry.register(new ViviIntegrations(bus));
   registry.register(new ViviNotifications(bus));
-  registry.register(new ViviAnalytics(bus));
-  registry.register(new ViviCore(bus));
+// registry.register(new ViviAnalytics(bus));  registry.register(new ViviCore(bus));
   registry.register(new ViviVoice(bus));
   registry.register(new ViviAvatar(bus));
   registry.register(new ViviFounderConsole(bus));
@@ -93,8 +91,7 @@ export function getVivi() {
     notifications: registry.get('notifications'),
     settings: registry.get('settings'),
     founderConsole: registry.get('founder_console'),
-    analytics: registry.get('analytics'),
-    security: registry.get('security'),
+// analytics: registry.get('analytics'),    security: registry.get('security'),
     api: registry.get('api'),
     logger: registry.get('logger'),
     realtimeFacts: registry.get('realtime_facts'),
