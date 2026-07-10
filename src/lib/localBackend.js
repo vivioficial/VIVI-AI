@@ -189,7 +189,7 @@ const localAuth = {
     const users = readStore('_users');
     const user = users.find((u) => u.email === email && u._passwordHash === hash);
     if (!user) throw Object.assign(new Error('Invalid email or password'), { status: 401 });
-    const { _passwordHash: _h, ...safe } = user;
+    const { _passwordHash: _unusedPasswordHash, ...safe } = user;
     saveUser(safe);
     localStorage.setItem(TOKEN_KEY, genId());
     return safe;
@@ -217,7 +217,7 @@ const localAuth = {
     if (!entry) throw new Error('No pending registration found for this email');
 
     const users = readStore('_users');
-    const { _pending: _p, ...userData } = entry;
+    const { _pending: _unusedPending, ...userData } = entry;
     const newUser = {
       id: genId(),
       email,
@@ -231,7 +231,7 @@ const localAuth = {
     writeStore('_users', users);
     writeStore('_pending_registrations', pending.filter((p) => p.email !== email));
 
-    const { _passwordHash: _pw, ...safe } = newUser;
+    const { _passwordHash: _unusedPasswordHash, ...safe } = newUser;
     const token = genId();
     saveUser(safe);
     localStorage.setItem(TOKEN_KEY, token);
