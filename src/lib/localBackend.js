@@ -42,6 +42,16 @@ function genId() {
 }
 
 /**
+ * Hash a password using SHA-256 via SubtleCrypto before storing it.
+ * Passwords are NEVER stored as plaintext.
+ */
+async function hashPassword(password) {
+  const enc = new TextEncoder();
+  const buf = await crypto.subtle.digest('SHA-256', enc.encode(password));
+  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+/**
  * Build a CRUD entity object matching the Base44 entities API surface:
  *   Entity.list(sortField?, limit?)
  *   Entity.filter(predicates, sortField?, limit?)
@@ -174,13 +184,12 @@ const localAuth = {
   },
 
   async loginViaEmailPassword(email, password) {
-    // Local mode: accept any credentials and create a session.
+    // Local mode: compare hashed passwords.
+    const hash = await hashPassword(password);
     const users = readStore('_users');
-    const user = users.find(
-      (u) => u.email === email && u._password === password
-    );
+    const user = users.find((u) => u.email === email && u._passwordHash === hash);
     if (!user) throw Object.assign(new Error('Invalid email or password'), { status: 401 });
-    const { _password: _p, ...safe } = user;
+    const { _passwordHash: _h, ...safe } = user;
     saveUser(safe);
     localStorage.setItem(TOKEN_KEY, genId());
     return safe;
@@ -191,8 +200,9 @@ const localAuth = {
     if (users.find((u) => u.email === email)) {
       throw new Error('An account with this email already exists');
     }
-    // Store pending registration; OTP flow is skipped in local mode.
-    const pending = { email, _password: password, _pending: true };
+    // Store pending registration with hashed password; OTP flow is skipped in local mode.
+    const hash = await hashPassword(password);
+    const pending = { email, _passwordHash: hash, _pending: true };
     writeStore('_pending_registrations', [
       ...readStore('_pending_registrations'),
       pending,
@@ -221,7 +231,7 @@ const localAuth = {
     writeStore('_users', users);
     writeStore('_pending_registrations', pending.filter((p) => p.email !== email));
 
-    const { _password: _pw, ...safe } = newUser;
+    const { _passwordHash: _pw, ...safe } = newUser;
     const token = genId();
     saveUser(safe);
     localStorage.setItem(TOKEN_KEY, token);
@@ -244,11 +254,10 @@ const localAuth = {
     window.location.href = `/login${returnUrl ? `?from=${encodeURIComponent(returnUrl)}` : ''}`;
   },
 
-  loginWithProvider(_provider, redirectUrl) {
+  loginWithProvider(_provider, _redirectUrl) {
     // Local mode: OAuth providers not supported; redirect to manual login.
     console.warn('[localBackend] OAuth not supported in local mode. Redirecting to /login.');
     window.location.href = '/login';
-    void redirectUrl;
   },
 
   async resetPasswordRequest(email) {
@@ -271,7 +280,8 @@ const localAuth = {
     const idx = users.findIndex((u) => u.email === entry.email);
     if (idx === -1) throw new Error('Account not found');
 
-    users[idx]._password = newPassword;
+    // Hash new password before storing — never store passwords as plaintext.
+    users[idx]._passwordHash = await hashPassword(newPassword);
     writeStore('_users', users);
     writeStore('_resets', resets.filter((r) => r.token !== resetToken));
     return { success: true };
@@ -316,10 +326,9 @@ async function invokeGemini({ prompt, model = 'gemini-2.0-flash-lite' }) {
 /**
  * InvokeLLM — matches the Base44 `integrations.Core.InvokeLLM` signature.
  * Tries OpenAI → Gemini → stub fallback in that order.
+ * The `_add_context_from_internet` parameter is not supported in local mode.
  */
-async function InvokeLLM({ prompt, response_json_schema, add_context_from_internet, model }) {
-  void add_context_from_internet; // not supported in local mode
-
+async function InvokeLLM({ prompt, response_json_schema, add_context_from_internet: _add_context_from_internet, model }) {
   let text = null;
 
   // Prefer OpenAI if key is set.
@@ -329,7 +338,8 @@ async function InvokeLLM({ prompt, response_json_schema, add_context_from_intern
 
   // Fall back to Gemini.
   if (text === null && import.meta.env.VITE_GEMINI_API_KEY) {
-    const geminiModel = model === 'gemini_3_flash' ? 'gemini-2.0-flash-lite' : 'gemini-2.0-flash-lite';
+    // Map Base44 model identifiers to Gemini model names.
+    const geminiModel = model === 'gemini_3_flash' ? 'gemini-2.0-flash' : 'gemini-2.0-flash-lite';
     try { text = await invokeGemini({ prompt, model: geminiModel }); } catch (e) { console.warn('[localBackend] Gemini failed:', e.message); }
   }
 
