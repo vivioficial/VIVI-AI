@@ -1,77 +1,108 @@
-# Base44 Project
+# Vivi AI — Asistente Personal Inteligente
 
-Use this repository to run and edit the app locally, then publish changes back through Base44.
+**Versión:** Recovery Stable v1.0  
+**Creado por:** Henrry Moyses García Rojas — HRYET  
+**Estado:** ✅ Listo para configuración de credenciales y despliegue en producción
 
-Any change pushed to the repo will also be reflected in the Base44 Builder.
+---
 
-## Prerequisites
+Vivi es una asistente personal de inteligencia artificial con voz, personalidad venezolana, memoria persistente y un sistema de módulos completamente desacoplado. El backend es Firebase (auth/Firestore/Storage) + OpenAI o Gemini como LLM.
 
-1. Clone the repository using the project's Git URL.
-2. Navigate to the project directory.
-3. Install dependencies: `npm install`.
-4. Install the Base44 CLI: `npm install -g base44@latest`.
+---
 
-See the [Base44 CLI docs](https://docs.base44.com/developers/references/cli/get-started/overview) if you want to run Base44 commands directly.
+## Inicio Rápido
 
-## Run Locally
-
-Run the full local development environment from the project root:
+### 1. Clonar e instalar
 
 ```bash
-base44 dev
+git clone <url-del-repo>
+cd VIVI-AI
+npm install
 ```
 
-`base44 dev` starts the local Base44 development backend and, when this app is configured for it, also starts the frontend dev server for you. Use the frontend URL printed by the command.
+### 2. Configurar credenciales
 
-For example, when the Base44 project config includes a `serveCommand`, `base44 dev` can launch the frontend too:
-
-```json5
-{
-  "site": {
-    "serveCommand": "npm run dev"
-  }
-}
+```bash
+cp .env.local.example .env.local
+# Edita .env.local con tus credenciales (ver SETUP.md para instrucciones detalladas)
 ```
 
-In a Base44 project this lives in `base44/config.jsonc`.
-
-## Run Only The Frontend
-
-If you only want to work on the frontend against the hosted Base44 backend, run:
+### 3. Ejecutar en desarrollo
 
 ```bash
 npm run dev
 ```
 
-Open the local URL printed by Vite.
+Abre `http://localhost:5173` en tu navegador.
 
-## Use The Hosted Backend
+---
 
-For frontend-only development, create or update `.env.local` in the project root:
+## Credenciales Necesarias
 
-```bash
-VITE_BASE44_APP_ID=your_app_id
-VITE_BASE44_APP_BASE_URL=https://your-app.base44.app
+Edita `.env.local` con los valores de tu proyecto:
+
+| Variable | Requerida | Descripción |
+|---|---|---|
+| `VITE_FIREBASE_API_KEY` | Sí | Firebase API Key |
+| `VITE_FIREBASE_AUTH_DOMAIN` | Sí | Firebase Auth Domain |
+| `VITE_FIREBASE_PROJECT_ID` | Sí | Firebase Project ID |
+| `VITE_FIREBASE_STORAGE_BUCKET` | Sí | Firebase Storage Bucket |
+| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Sí | Firebase Messaging Sender ID |
+| `VITE_FIREBASE_APP_ID` | Sí | Firebase App ID |
+| `VITE_OPENAI_API_KEY` | Recomendada | GPT-4, DALL-E, TTS, Vision |
+| `VITE_GEMINI_API_KEY` | Alternativa | Google Gemini como LLM |
+
+> **Sin credenciales:** la app arranca en modo demo con Web Speech API y almacenamiento en memoria (no persiste entre sesiones).
+
+Consulta **[SETUP.md](./SETUP.md)** para el proceso completo paso a paso.
+
+---
+
+## Comandos
+
+| Comando | Descripción |
+|---|---|
+| `npm run dev` | Servidor de desarrollo (Vite) |
+| `npm run build` | Build de producción → `dist/` |
+| `npm run lint` | Linter ESLint |
+| `npm run lint:fix` | Corrección automática de lint |
+| `npm run preview` | Vista previa del build de producción |
+
+---
+
+## Estructura del Proyecto
+
+```
+VIVI-AI/
+├── src/
+│   ├── api/              # base44Client.js — shim de compatibilidad
+│   ├── services/         # Firebase, Auth, Firestore, LLM, Storage
+│   ├── vivi/             # Sistema central de Vivi
+│   │   ├── core/         # EventBus, ModuleBase, ModuleRegistry
+│   │   ├── modules/      # 35+ módulos independientes
+│   │   ├── hooks/        # useVivi — bridge React ↔ sistema
+│   │   ├── tests/        # Tests unitarios de módulos core
+│   │   └── index.js      # Bootstrap del sistema singleton
+│   ├── pages/            # Pantallas de la aplicación
+│   ├── components/       # Componentes React reutilizables
+│   ├── hooks/            # useChat, usePullToRefresh, etc.
+│   └── lib/              # AuthContext, QueryClient, utilidades
+├── public/               # Assets estáticos
+├── .env.local.example    # Plantilla de variables de entorno
+├── SETUP.md              # Guía de configuración completa
+├── CHANGELOG.md          # Historial de cambios
+└── docs/                 # Documentación técnica
+    ├── ARCHITECTURE.md   # Arquitectura del sistema
+    ├── MODULES.md        # Catálogo de módulos
+    └── DEPLOYMENT.md     # Guía de despliegue en producción
 ```
 
-`VITE_BASE44_APP_ID` identifies the Base44 app.
+---
 
-`VITE_BASE44_APP_BASE_URL` tells the Base44 Vite plugin where to send local `/api` requests. Point it at your deployed Base44 app URL when you want the local frontend to use the hosted backend.
+## Documentación Técnica
 
-When you use `base44 dev`, the command injects the local Base44 values for you, so `.env.local` is mainly needed for frontend-only workflows.
-
-## Publish Your Changes
-
-After pushing your changes to git, open the Base44 dashboard and publish the app:
-
-```bash
-base44 dashboard open
-```
-
-## Docs & Support
-
-Documentation: [https://docs.base44.com/Integrations/Using-GitHub](https://docs.base44.com/Integrations/Using-GitHub)
-
-Base44 CLI command reference: [https://docs.base44.com/developers/references/cli/commands/introduction](https://docs.base44.com/developers/references/cli/commands/introduction)
-
-Support: [https://app.base44.com/support](https://app.base44.com/support)
+- **[SETUP.md](./SETUP.md)** — Configuración de Firebase, OpenAI y Gemini
+- **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)** — Arquitectura del sistema Vivi
+- **[docs/MODULES.md](./docs/MODULES.md)** — Catálogo completo de módulos
+- **[docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)** — Despliegue en producción
+- **[CHANGELOG.md](./CHANGELOG.md)** — Historial de versiones
