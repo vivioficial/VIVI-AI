@@ -145,7 +145,7 @@ const localAuth = {
     return u;
   },
   async loginViaEmailPassword(email, _password) {
-    const user = { id: btoa(email).replace(/=/g, ''), email, display_name: email.split('@')[0], role: 'user', is_founder: false };
+    const user = { id: uid(), email, display_name: email.split('@')[0], role: 'user', is_founder: false };
     this._set(user);
     return user;
   },
@@ -154,9 +154,9 @@ const localAuth = {
   },
   async register({ email, _password }) { return { success: true }; },
   async verifyOtp({ email, _otpCode }) {
-    const user = { id: btoa(email).replace(/=/g, ''), email, display_name: email.split('@')[0], role: 'user', is_founder: false };
+    const user = { id: uid(), email, display_name: email.split('@')[0], role: 'user', is_founder: false };
     this._set(user);
-    return { access_token: btoa(`${email}:${Date.now()}`), user };
+    return { access_token: uid(), user };
   },
   async resendOtp(_email) { return { success: true }; },
   setToken(_token) { /* no-op in local mode */ },
