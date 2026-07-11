@@ -21,7 +21,6 @@ import VDEConsole from '@/pages/VDEConsole';
 import Chat from '@/pages/Chat';
 import PageTransition from '@/components/PageTransition';
 import Memoria from '@/pages/Memoria';
-// Add page imports here
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
@@ -29,7 +28,7 @@ const AuthenticatedApp = () => {
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center">
+      <div className="fixed inset-0 flex items-center justify-center bg-slate-950/40">
         <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
       </div>
     );
@@ -39,7 +38,6 @@ const AuthenticatedApp = () => {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
-      // Corrección de producción: Redirección declarativa para evitar efectos secundarios en renderizado
       return <Navigate to="/login" replace state={{ from: location }} />;
     }
   }
@@ -66,7 +64,6 @@ const AuthenticatedApp = () => {
     </AnimatePresence>
   );
 };
-
 
 function App() {
   return (
