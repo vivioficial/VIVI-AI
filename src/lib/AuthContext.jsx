@@ -1,143 +1,118 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
-import { appParams } from '@/lib/app-params';
-import axios from 'axios';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 
 const AuthContext = createContext();
+
+/**
+ * AuthProvider — Firebase Authentication.
+ * Mantiene exactamente la misma API pública que la versión anterior
+ * (user, isAuthenticated, isLoadingAuth, isLoadingPublicSettings,
+ * authError, appPublicSettings, authChecked, logout, navigateToLogin,
+ * checkUserAuth, checkAppState) para no romper ningún consumidor.
+ */
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
-  const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(true);
+  const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(false);
   const [authError, setAuthError] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
-  const [appPublicSettings, setAppPublicSettings] = useState(null); // Contains only { id, public_settings }
+  const [appPublicSettings] = useState(null); // Concepto de Base44 sin equivalente en Firebase; se conserva por compatibilidad.
 
   useEffect(() => {
-    checkAppState();
+    // onAuthStateChanged es la fuente de verdad de la sesión en Firebase:
+    // se dispara al cargar (restaurando la sesión persistida) y en cada
+    // login/logout. La persistencia local es el comportamiento por defecto
+    // del SDK web, por lo que la sesión sobrevive al refrescar la página.
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      (firebaseUser) => {
+        if (firebaseUser) {
+          setUser(mapFirebaseUser(firebaseUser));
+          setIsAuthenticated(true);
+        } else {
+          setUser(null);
+          setIsAuthenticated(false);
+        }
+        setAuthError(null);
+        setIsLoadingAuth(false);
+        setAuthChecked(true);
+      },
+      (error) => {
+        console.error('Auth state listener error:', error);
+        setAuthError({ type: 'unknown', message: error.message || 'Authentication error' });
+        setUser(null);
+        setIsAuthenticated(false);
+        setIsLoadingAuth(false);
+        setAuthChecked(true);
+      }
+    );
+    return unsubscribe;
   }, []);
 
-  const checkAppState = async () => {
-    try {
-      setIsLoadingPublicSettings(true);
-      setAuthError(null);
-      
-            // First, check app public settings (with token if available)
-      // This will tell us if auth is required, user not registered, etc.
-      const appClient = axios.create({
-        baseURL: `/api/apps/public`,
-        headers: {
-          'X-App-Id': appParams.appId,
-          ...(appParams.token
-            ? { Authorization: `Bearer ${appParams.token}` }
-            : {})
-        }
-      });
+  const mapFirebaseUser = (firebaseUser) => ({
+    uid: firebaseUser.uid,
+    id: firebaseUser.uid,
+    email: firebaseUser.email,
+    display_name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || '',
+    photo_url: firebaseUser.photoURL || null,
+    email_verified: firebaseUser.emailVerified,
+  });
 
-      try {
-        const publicSettings = await appClient.get(
-          `/prod/public-settings/by-id/${appParams.appId}`
-        );
-        setAppPublicSettings(publicSettings);
-        
-        // If we got the app public settings successfully, check if user is authenticated
-        if (appParams.token) {
-          await checkUserAuth();
-        } else {
-          setIsLoadingAuth(false);
-          setIsAuthenticated(false);
-          setAuthChecked(true);
-        }
-        setIsLoadingPublicSettings(false);
-      } catch (appError) {
-        console.error('App state check failed:', appError);
-        
-        // Handle app-level errors
-        if (appError.status === 403 && appError.data?.extra_data?.reason) {
-          const reason = appError.data.extra_data.reason;
-          if (reason === 'auth_required') {
-            setAuthError({
-              type: 'auth_required',
-              message: 'Authentication required'
-            });
-          } else if (reason === 'user_not_registered') {
-            setAuthError({
-              type: 'user_not_registered',
-              message: 'User not registered for this app'
-            });
-          } else {
-            setAuthError({
-              type: reason,
-              message: appError.message
-            });
-          }
-        } else {
-          setAuthError({
-            type: 'unknown',
-            message: appError.message || 'Failed to load app'
-          });
-        }
-        setIsLoadingPublicSettings(false);
-        setIsLoadingAuth(false);
-      }
-    } catch (error) {
-      console.error('Unexpected error:', error);
-      setAuthError({
-        type: 'unknown',
-        message: error.message || 'An unexpected error occurred'
-      });
-      setIsLoadingPublicSettings(false);
-      setIsLoadingAuth(false);
-    }
-  };
-
+  /** Relee el usuario actual de Firebase. Conservado por compatibilidad de API. */
   const checkUserAuth = async () => {
+    setIsLoadingAuth(true);
     try {
-      // Now check if the user is authenticated
-      setIsLoadingAuth(true);
-      const currentUser = await base44.auth.me();
-      setUser(currentUser);
-      setIsAuthenticated(true);
-      setIsLoadingAuth(false);
-      setAuthChecked(true);
+      const current = auth.currentUser;
+      if (current) {
+        await current.reload();
+        setUser(mapFirebaseUser(auth.currentUser));
+        setIsAuthenticated(true);
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
+      }
     } catch (error) {
       console.error('User auth check failed:', error);
-      setIsLoadingAuth(false);
+      setUser(null);
       setIsAuthenticated(false);
+      setAuthError({ type: 'auth_required', message: 'Authentication required' });
+    } finally {
+      setIsLoadingAuth(false);
       setAuthChecked(true);
-      
-      // If user auth fails, it might be an expired token
-      if (error.status === 401 || error.status === 403) {
-        setAuthError({
-          type: 'auth_required',
-          message: 'Authentication required'
-        });
-      }
     }
   };
 
-  const logout = (shouldRedirect = true) => {
+  /** En Firebase no hay "public settings" de app (concepto de Base44).
+   *  Conservado por compatibilidad: solo refresca el estado del usuario. */
+  const checkAppState = async () => {
+    setAuthError(null);
+    await checkUserAuth();
+  };
+
+  const logout = async (shouldRedirect = true) => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
     setUser(null);
     setIsAuthenticated(false);
-    
     if (shouldRedirect) {
-      // Use the SDK's logout method which handles token cleanup and redirect
-      base44.auth.logout(window.location.href);
-    } else {
-      // Just remove the token without redirect
-      base44.auth.logout();
+      window.location.href = '/login';
     }
   };
 
   const navigateToLogin = () => {
-    // Use the SDK's redirectToLogin method
-    base44.auth.redirectToLogin(window.location.href);
+    const from = encodeURIComponent(window.location.pathname + window.location.search);
+    window.location.href = `/login?from=${from}`;
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      isAuthenticated, 
+    <AuthContext.Provider value={{
+      user,
+      isAuthenticated,
       isLoadingAuth,
       isLoadingPublicSettings,
       authError,
