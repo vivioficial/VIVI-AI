@@ -36,16 +36,17 @@ export default function Login() {
   }
 };
 
-  const handleGoogle = async () => {
-    try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-      window.location.href = "/";
-    } catch (err) {
-      setError(err.message || "No se pudo iniciar sesión con Google");
-    }
-  };
+const handleGoogle = async () => {
+  setError("");
 
+  try {
+    const provider = new GoogleAuthProvider();
+    await signInWithPopup(auth, provider);
+    window.location.href = "/";
+  } catch (err) {
+    setError(err.message || "No se pudo iniciar sesión con Google");
+  }
+};
   return (
     <PageTransition>
       <AuthLayout
