@@ -1,77 +1,159 @@
-# Base44 Project
+# Vivi AI
 
-Use this repository to run and edit the app locally, then publish changes back through Base44.
+Vivi AI is an intelligent voice assistant built with modern web technologies.
 
-Any change pushed to the repo will also be reflected in the Base44 Builder.
+The project no longer depends on Base44.
 
-## Prerequisites
+## Stack
 
-1. Clone the repository using the project's Git URL.
-2. Navigate to the project directory.
-3. Install dependencies: `npm install`.
-4. Install the Base44 CLI: `npm install -g base44@latest`.
+- React
+- Vite
+- Firebase Authentication
+- Firebase Hosting / Firestore
+- Google Gemini API
+- Web Speech API (Speech Recognition & Speech Synthesis)
+- Vercel
 
-See the [Base44 CLI docs](https://docs.base44.com/developers/references/cli/get-started/overview) if you want to run Base44 commands directly.
+---
 
-## Run Locally
+# Requirements
 
-Run the full local development environment from the project root:
+- Node.js 20+
+- npm
+
+Install dependencies:
 
 ```bash
-base44 dev
+npm install
 ```
 
-`base44 dev` starts the local Base44 development backend and, when this app is configured for it, also starts the frontend dev server for you. Use the frontend URL printed by the command.
+---
 
-For example, when the Base44 project config includes a `serveCommand`, `base44 dev` can launch the frontend too:
+# Environment Variables
 
-```json5
-{
-  "site": {
-    "serveCommand": "npm run dev"
-  }
-}
+Create a `.env.local` file:
+
+```env
+VITE_FIREBASE_API_KEY=
+VITE_FIREBASE_AUTH_DOMAIN=
+VITE_FIREBASE_PROJECT_ID=
+VITE_FIREBASE_STORAGE_BUCKET=
+VITE_FIREBASE_MESSAGING_SENDER_ID=
+VITE_FIREBASE_APP_ID=
+
+VITE_GEMINI_API_KEY=
 ```
 
-In a Base44 project this lives in `base44/config.jsonc`.
+Never commit these keys to Git.
 
-## Run Only The Frontend
+---
 
-If you only want to work on the frontend against the hosted Base44 backend, run:
+# Development
+
+Run the application locally:
 
 ```bash
 npm run dev
 ```
 
-Open the local URL printed by Vite.
+---
 
-## Use The Hosted Backend
-
-For frontend-only development, create or update `.env.local` in the project root:
+# Production Build
 
 ```bash
-VITE_BASE44_APP_ID=your_app_id
-VITE_BASE44_APP_BASE_URL=https://your-app.base44.app
+npm run build
 ```
 
-`VITE_BASE44_APP_ID` identifies the Base44 app.
-
-`VITE_BASE44_APP_BASE_URL` tells the Base44 Vite plugin where to send local `/api` requests. Point it at your deployed Base44 app URL when you want the local frontend to use the hosted backend.
-
-When you use `base44 dev`, the command injects the local Base44 values for you, so `.env.local` is mainly needed for frontend-only workflows.
-
-## Publish Your Changes
-
-After pushing your changes to git, open the Base44 dashboard and publish the app:
+Preview production:
 
 ```bash
-base44 dashboard open
+npm run preview
 ```
 
-## Docs & Support
+---
 
-Documentation: [https://docs.base44.com/Integrations/Using-GitHub](https://docs.base44.com/Integrations/Using-GitHub)
+# Deployment
 
-Base44 CLI command reference: [https://docs.base44.com/developers/references/cli/commands/introduction](https://docs.base44.com/developers/references/cli/commands/introduction)
+Production is deployed on Vercel.
 
-Support: [https://app.base44.com/support](https://app.base44.com/support)
+After pushing to GitHub, Vercel automatically builds and deploys the latest version.
+
+---
+
+# Firebase Configuration
+
+Before deploying, verify:
+
+- Firebase Authentication enabled.
+- Authorized Domains include:
+
+```
+localhost
+vivi-ai-main.vercel.app
+```
+
+If using a custom domain, add it as well.
+
+---
+
+# Features
+
+- Voice conversations
+- Speech-to-Text
+- Text-to-Speech
+- Gemini AI integration
+- Firebase Authentication
+- Conversation memory
+- Animated avatar
+- Responsive interface
+- Progressive Web App (PWA)
+
+---
+
+# Project Structure
+
+```
+src/
+ ├── components/
+ ├── pages/
+ ├── hooks/
+ ├── services/
+ ├── lib/
+ │    └── firebase.js
+ ├── contexts/
+ ├── assets/
+ └── App.jsx
+```
+
+---
+
+# Scripts
+
+```bash
+npm run dev
+npm run build
+npm run preview
+npm run lint
+```
+
+---
+
+# Security
+
+Do not hardcode API keys.
+
+All Firebase credentials must be provided through environment variables.
+
+Remove all demo fallback values before production.
+
+---
+
+# License
+
+Copyright © 2026
+
+Vivi AI
+
+Created by Henrry Moisés García Rojas.
+
+All rights reserved.
