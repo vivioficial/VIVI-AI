@@ -35,7 +35,6 @@ export default function Login() {
     setLoading(false);
   }
 };
-
 const handleGoogle = async () => {
   setError("");
 
