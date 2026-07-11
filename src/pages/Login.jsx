@@ -22,17 +22,19 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
-    setLoading(true);
+  e.preventDefault();
+  setError("");
+  setLoading(true);
 
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      window.location.href = "/";
-    } catch (err) {
-      setError(err.message || "Correo o contraseña incorrectos");
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    window.location.href = "/";
+  } catch (err) {
+    setError(err.message || "Correo o contraseña incorrectos");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleGoogle = async () => {
     try {
@@ -61,23 +63,24 @@ export default function Login() {
             </Link>
           </>
         }
-          <Button
-        variant="outline"
-        className="w-full h-12 text-sm font-medium mb-6"
-        onClick={handleGoogle}
       >
-        <GoogleIcon className="w-5 h-5 mr-2" />
-        Continue with Google
-      </Button>
+<Button
+  variant="outline"
+  className="w-full h-12 text-sm font-medium mb-6"
+  onClick={handleGoogle}
+>
+  <GoogleIcon className="w-5 h-5 mr-2" />
+  Continue with Google
+</Button>
 
-      <div className="relative mb-6">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-border" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-card px-3 text-muted-foreground">or</span>
-        </div>
-      </div>
+<div className="relative mb-6">
+  <div className="absolute inset-0 flex items-center">
+    <div className="w-full border-t border-border" />
+  </div>
+  <div className="relative flex justify-center text-xs uppercase">
+    <span className="bg-card px-3 text-muted-foreground">or</span>
+  </div>
+</div>
 
       {error && (
         <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
