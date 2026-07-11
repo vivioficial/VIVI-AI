@@ -24,7 +24,7 @@ import Memoria from '@/pages/Memoria';
 // Add page imports here
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
   const location = useLocation();
 
   if (isLoadingPublicSettings || isLoadingAuth) {
@@ -39,8 +39,8 @@ const AuthenticatedApp = () => {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
-      navigateToLogin();
-      return null;
+      // Corrección de producción: Redirección declarativa para evitar efectos secundarios en renderizado
+      return <Navigate to="/login" replace state={{ from: location }} />;
     }
   }
 
@@ -69,7 +69,6 @@ const AuthenticatedApp = () => {
 
 
 function App() {
-
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
@@ -83,4 +82,4 @@ function App() {
   )
 }
 
-export default App
+export default App;
