@@ -1,0 +1,50 @@
+import { db } from "@/lib/firebase";
+import { collection, addDoc, query, where, orderBy, getDocs, serverTimestamp } from "firebase/firestore";
+
+/**
+ * Guarda un mensaje en el historial de Firestore asociado al usuario.
+ */
+export async function saveMessageToFirestore(userId, role, content) {
+  try {
+    if (!userId) return null;
+    
+    const docRef = await addDoc(collection(db, "vivi_conversations"), {
+      userId,
+      role, // 'user' o 'assistant' (Vivi)
+      content,
+      createdAt: serverTimestamp()
+    });
+    
+    return docRef.id;
+  } catch (error) {
+    console.error("[Firebase Error] No se pudo guardar el mensaje:", error);
+    throw error;
+  }
+}
+
+/**
+ * Recupera el historial de conversación del usuario actual.
+ */
+export async function fetchConversationHistory(userId) {
+  try {
+    if (!userId) return [];
+    
+    const q = query(
+      collection(db, "vivi_conversations"),
+      where("userId", "==", userId),
+      orderBy("createdAt", "asc")
+    );
+    
+    const querySnapshot = await getDocs(q);
+    const messages = [];
+    
+    querySnapshot.forEach((doc) => {
+      messages.push({ id: doc.id, ...doc.data() });
+    });
+    
+    return messages;
+  } catch (error) {
+    console.error("[Firebase Error] No se pudo recuperar el historial:", error);
+    return [];
+  }
+}
