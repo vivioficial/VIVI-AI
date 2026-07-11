@@ -1,7 +1,5 @@
-import { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
-import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
 const DefaultFallback = () => (
   <div className="fixed inset-0 flex items-center justify-center">
@@ -10,28 +8,19 @@ const DefaultFallback = () => (
 );
 
 export default function ProtectedRoute({ fallback = <DefaultFallback />, unauthenticatedElement }) {
-  const { isAuthenticated, isLoadingAuth, authChecked, authError, checkUserAuth } = useAuth();
+  const { isAuthenticated, isLoadingAuth, authChecked, authError } = useAuth();
 
-  useEffect(() => {
-    if (!authChecked && !isLoadingAuth) {
-      checkUserAuth();
-    }
-  }, [authChecked, isLoadingAuth, checkUserAuth]);
-
+  // Espera a que el SDK de Firebase complete la hidratación de la sesión inicial
   if (isLoadingAuth || !authChecked) {
     return fallback;
   }
 
-  if (authError) {
-    if (authError.type === 'user_not_registered') {
-      return <UserNotRegisteredError />;
-    }
+  // Si hay un error de infraestructura crítico o el usuario no está autenticado,
+  // se delega la acción al elemento no autenticado (ej. redirección declarativa a /login)
+  if (authError || !isAuthenticated) {
     return unauthenticatedElement;
   }
 
-  if (!isAuthenticated) {
-    return unauthenticatedElement;
-  }
-
+  // Si la sesión es válida y está confirmada, renderiza las sub-rutas protegidas
   return <Outlet />;
 }
