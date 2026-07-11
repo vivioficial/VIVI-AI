@@ -12,39 +12,13 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-let app;
-let auth;
-let db;
-let storage;
-let firebaseInitialized = false;
+const app = initializeApp(firebaseConfig);
 
-try {
-  const required = Object.values(firebaseConfig).every(Boolean);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
 
-  if (!required) {
-    throw new Error("Missing Firebase environment variables.");
-  }
+setPersistence(auth, browserLocalPersistence).catch(console.warn);
 
-  app = initializeApp(firebaseConfig);
-
-  auth = getAuth(app);
-  db = getFirestore(app);
-  storage = getStorage(app);
-
-  setPersistence(auth, browserLocalPersistence).catch(console.warn);
-
-  firebaseInitialized = true;
-} catch (error) {
-  console.error("Firebase initialization failed:", error);
-  firebaseInitialized = false;
-}
-
-export {
-  app,
-  auth,
-  db,
-  storage,
-  firebaseInitialized
-};
-
+export { app, auth, db, storage };
 export default app;
