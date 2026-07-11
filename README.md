@@ -1,17 +1,21 @@
 # Vivi AI
 
-Vivi AI is an intelligent voice assistant built with modern web technologies.
+Vivi AI is an intelligent AI voice assistant built with modern web technologies.
 
-The project no longer depends on Base44.
+The project is fully independent from Base44 and uses Firebase + Gemini through a provider adapter architecture.
 
-## Stack
+---
+
+# Technology Stack
 
 - React
 - Vite
 - Firebase Authentication
-- Firebase Hosting / Firestore
+- Firebase Firestore
+- Firebase Storage
 - Google Gemini API
-- Web Speech API (Speech Recognition & Speech Synthesis)
+- Web Speech API
+- Progressive Web App (PWA)
 - Vercel
 
 ---
@@ -40,17 +44,20 @@ VITE_FIREBASE_PROJECT_ID=
 VITE_FIREBASE_STORAGE_BUCKET=
 VITE_FIREBASE_MESSAGING_SENDER_ID=
 VITE_FIREBASE_APP_ID=
+VITE_FIREBASE_MEASUREMENT_ID=
 
 VITE_GEMINI_API_KEY=
+
+FIREBASE_PROJECT_ID=
+FIREBASE_CLIENT_EMAIL=
+FIREBASE_PRIVATE_KEY=
 ```
 
-Never commit these keys to Git.
+Never commit `.env.local` or service account credentials.
 
 ---
 
 # Development
-
-Run the application locally:
 
 ```bash
 npm run dev
@@ -76,21 +83,24 @@ npm run preview
 
 Production is deployed on Vercel.
 
-After pushing to GitHub, Vercel automatically builds and deploys the latest version.
+Every push to the `main` branch automatically triggers a new production deployment.
+
+Environment variables must be configured inside Vercel before deployment.
 
 ---
 
 # Firebase Configuration
 
-Before deploying, verify:
+Before deploying verify:
 
-- Firebase Authentication enabled.
-- Authorized Domains include:
+- Authentication enabled
+- Firestore enabled
+- Storage enabled
 
-```
-localhost
-vivi-ai-main.vercel.app
-```
+Authorized domains:
+
+- localhost
+- vivi-ai-main.vercel.app
 
 If using a custom domain, add it as well.
 
@@ -99,14 +109,26 @@ If using a custom domain, add it as well.
 # Features
 
 - Voice conversations
-- Speech-to-Text
+- Speech Recognition
 - Text-to-Speech
 - Gemini AI integration
 - Firebase Authentication
 - Conversation memory
 - Animated avatar
+- Image analysis
+- File uploads
+- Tool system
+- Provider adapter architecture
 - Responsive interface
 - Progressive Web App (PWA)
+
+---
+
+# Architecture
+
+Vivi AI uses a provider adapter architecture.
+
+External providers such as Firebase, Gemini, Storage and future AI providers are isolated behind adapters, allowing them to be replaced without changing the application's business logic.
 
 ---
 
@@ -114,14 +136,14 @@ If using a custom domain, add it as well.
 
 ```
 src/
+ ├── assets/
  ├── components/
- ├── pages/
+ ├── contexts/
  ├── hooks/
- ├── services/
  ├── lib/
  │    └── firebase.js
- ├── contexts/
- ├── assets/
+ ├── pages/
+ ├── services/
  └── App.jsx
 ```
 
@@ -140,11 +162,11 @@ npm run lint
 
 # Security
 
-Do not hardcode API keys.
-
-All Firebase credentials must be provided through environment variables.
-
-Remove all demo fallback values before production.
+- Never hardcode API keys.
+- Never commit `.env.local`.
+- Never commit Firebase Service Account credentials.
+- Rotate compromised keys immediately.
+- Store secrets only in Vercel Environment Variables.
 
 ---
 
@@ -152,8 +174,8 @@ Remove all demo fallback values before production.
 
 Copyright © 2026
 
-Vivi AI
+**Vivi AI**
 
-Created by Henrry Moisés García Rojas.
+Created and designed by **Henrry Moisés García Rojas**
 
 All rights reserved.
