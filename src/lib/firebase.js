@@ -29,7 +29,7 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-// Evita la duplicación de instancias durante el Hot Module Replacement (HMR) de Vite 6
+// Evita la duplicación de instancias durante el Hot Module Replacement (HMR) de Vite
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
 const auth = getAuth(app);
