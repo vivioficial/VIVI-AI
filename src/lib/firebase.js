@@ -1,37 +1,50 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth, setPersistence, browserLocalPersistence } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
+import { initializeApp } from "firebase/app";
+import { getAuth, browserLocalPersistence, setPersistence } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
-// Firebase configuration - uses env variables or demo mode
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'demo-key',
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'demo-auth-domain',
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'demo-project',
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'demo-bucket',
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || 'demo-sender',
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || 'demo-app'
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-let app, auth, db, storage;
+let app;
+let auth;
+let db;
+let storage;
 let firebaseInitialized = false;
 
 try {
+  const required = Object.values(firebaseConfig).every(Boolean);
+
+  if (!required) {
+    throw new Error("Missing Firebase environment variables.");
+  }
+
   app = initializeApp(firebaseConfig);
+
   auth = getAuth(app);
   db = getFirestore(app);
   storage = getStorage(app);
-  
-  // Set persistence
-  setPersistence(auth, browserLocalPersistence).catch(error => {
-    console.warn('Firebase persistence not available:', error);
-  });
-  
+
+  setPersistence(auth, browserLocalPersistence).catch(console.warn);
+
   firebaseInitialized = true;
 } catch (error) {
-  console.warn('Firebase initialization failed, falling back to local storage:', error);
+  console.error("Firebase initialization failed:", error);
   firebaseInitialized = false;
 }
 
-export { auth, db, storage, app, firebaseInitialized };
+export {
+  app,
+  auth,
+  db,
+  storage,
+  firebaseInitialized
+};
+
 export default app;
