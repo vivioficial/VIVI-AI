@@ -35,6 +35,7 @@ export default function Login() {
     setLoading(false);
   }
 };
+
 const handleGoogle = async () => {
   setError("");
 
@@ -46,6 +47,7 @@ const handleGoogle = async () => {
     setError(err.message || "No se pudo iniciar sesión con Google");
   }
 };
+
   return (
     <PageTransition>
       <AuthLayout
