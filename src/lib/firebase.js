@@ -20,13 +20,15 @@ for (const envVar of requiredEnvVars) {
   }
 }
 
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey: "AIzaSyDWtwJ0KnHmpkuAda3zivzIIRRKMAHemS0",
+  authDomain: "vivi-ai-24a43.firebaseapp.com",
+  projectId: "vivi-ai-24a43",
+  storageBucket: "vivi-ai-24a43.firebasestorage.app",
+  messagingSenderId: "965906696167",
+  appId: "1:965906696167:web:009e6ad9ef18128eff5f42",
+  measurementId: "G-C300RZYB70"
 };
 
 // Evita la duplicación de instancias durante el Hot Module Replacement (HMR) de Vite
